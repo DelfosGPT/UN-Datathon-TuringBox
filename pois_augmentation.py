@@ -1,143 +1,58 @@
-prompt_template = """
-
-Necesito generar un JSON con la siguiente estructura:
-1. Un campo 'description' que contenga una descripción comercial de máximo 75 palabras que incluya:
-   - Tipo de lugar y ambiente general
-   - Servicios disponibles
-   - Ocasión ideal de visita y público objetivo
-   - Nivel de precios
-   - Características especiales del espacio
-   La descripción debe ser natural y fluida, sin mencionar nombres, ubicaciones específicas, datos numéricos exactos ni horarios.
-
-2. Un campo 'data' que contenga:
-   - name
-   - comuna
-   - categories (Categorias que describen la tipologia y actividad del punto de interes)
-   - address (limpia la dirección para que tenga un formato correcto y sentido, eliminando caracteres extraños o repeticiones)
-   - rating bayesian (bayesian_mean)
-   - latitude
-   - longitude
-    - precio (precio entre valores $, $$, $$$, $$$$) 
-
-
-Notas importantes:
-- La descripción debe basarse únicamente en la información proporcionada en el input
-- No inventar información adicional
-- Mantener el formato JSON consistente
-- Los valores numéricos deben mantener su formato original (decimales, etc.)
-- La dirección debe limpiarse para mostrar solo una dirección con sentido y formato correcto
-
-
-{expected_output}
-
-Genera el JSON basado en el siguiente input:
-
-Ten en cuenta que los nombres de las columnas son los siguientes:
-"{columns}"
-
-input : "
-{input_text}
-"
 """
+This script processes a CSV file containing data related to places, invokes the Claude model from Amazon Bedrock 
+to generate responses based on a prompt template, and saves the responses to a JSON file.
 
-expected_output_template = """
----
-## Ejemplo 1:
+The main steps involved are:
+1. Reading a CSV file containing place data.
+2. Constructing a prompt for the model using a template and the data from each row of the CSV.
+3. Sending the prompt to the Claude model hosted on Amazon Bedrock for processing.
+4. Handling retries and rate-limiting using exponential backoff in case of throttling.
+5. Saving the responses in a JSON file to persist progress and avoid reprocessing.
 
-### Input Ejemplo 1:
+Modules Used:
+- pandas: For reading and processing the CSV data.
+- json: For reading/writing JSON data.
+- boto3: AWS SDK for Python to interact with Amazon Bedrock.
+- botocore.exceptions: For handling AWS-specific errors like throttling.
+- time: For introducing delays between requests and retries.
 
-,name,desc,score,c_score,price,category,accessibility,schedule,web,search_parameters,phone,address,lat,lon,bayesian_mean,Comuna
-0,Los Fabio's Popular,"Información  Opciones de servicio
-
-Asientos al aire libre
-
-Entrega a domicilio
-
-Para llevar
-
-Consumo en el lugar
-    Qué ofrece
-
-Comidas durante la madrugada
-    Opciones del local
-
-Cena
-
-Espacio con asientos
-    Ambiente
-
-Agradable
-
-Informal
-    Público usual
-
-Grupos
-    Menores
-
-Ideal para ir con niños",4.5,74.0,$ 10.000-20.000,Hamburguesería,,"6 pm.,9 pm.",,Comuna Popular Restaurantes,319 6117987 ,"Cra. 42c #107-001, La Isla, Medellín, Popular, Medellín, Antioquia",6.295462,-75.5485003,4.440476190476191,Popular
+Files:
+- "./data/input/templates/prompt_template.txt": Template for creating the prompt.
+- "./data/input/templates/expected_output_template.txt": Template for the expected output format.
+- "./data/output/places/final_places.csv": CSV file with place data to be processed.
+- "all_responses.json": JSON file to store the responses from the model.
 
-### output ejemplo 1:
-   
-   {
-      "description": "hamburguesería informal con ambiente agradable, perfecta para disfrutar en familia o grupos pequeños. Ofrece opciones de servicio flexibles incluyendo consumo en el local, para llevar y delivery. Cuenta con agradable espacio al aire libre y área interior con asientos. Ideal para cenas casuales y antojos nocturnos con precios moderados, siendo una excelente opción para experiencias gastronómicas relajadas.",
-      "data": {
-         "name": "Los Fabio's Popular",
-         "comuna": "Popular",
-         "categories": "restaurante, comida rapida, hamburguesas",
-         "address": "Cra. 42c #107-001, La Isla, Medellín, Popular, Medellín, Antioquia",
-         "rating bayesian": 4.440,
-         "latitude": 6.295462,
-         "longitude": -75.5485003,
-         "precio" : "$"
-      }
-   }
+Functions:
+---------
+- `invoke_claude(prompt, max_retries=5, initial_delay=1)`: 
+    Invokes the Claude model with a given prompt and handles retry logic in case of throttling.
+    
+Process:
+--------
+1. Load the CSV file and read the data into a pandas DataFrame.
+2. Read the prompt template and expected output template from text files.
+3. Set up the AWS Bedrock client with credentials stored in environment variables.
+4. Iterate over the rows in the CSV (skipping already processed ones), generate a prompt using the template, 
+   and send the prompt to the Claude model for processing.
+5. Parse the model's response, extract relevant information, and save it to the `all_responses.json` file.
+6. If an error occurs during processing, retry the request up to a specified number of attempts.
 
-## Ejemplo 2:
+Retries and Delay:
+-----------------
+If the request is rate-limited (throttled), the script will wait and retry the request using exponential backoff. 
+It will attempt to process each row a maximum of 5 times before moving to the next row.
 
-### Input Ejemplo 2:
+Example usage:
+--------------
+1. Place the required CSV and template files in the correct directory.
+2. Ensure AWS credentials are set in the environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`).
+3. Run the script to start processing the rows in the CSV and generating model responses.
 
-,name,desc,score,c_score,price,category,accessibility,schedule,web,search_parameters,phone,address,lat,lon,bayesian_mean,Comuna
-1390,Museo de Arte Moderno de Medellín,"Información  Museo de arte moderno con una colección permanente y exposiciones rotativas, además de una gran sala de cine.
-    Accesibilidad
-
-Entrada accesible para personas en silla de ruedas
-
-Estacionamiento accesible para personas en silla de ruedas
-
-Sanitarios accesibles para personas en silla de ruedas
-    Opciones de servicio
-
-Servicios en el lugar
-    Servicios
-
-Restaurante
-
-Sanitario
-    Menores
-
-Ideal para ir con niños",4.7,11539.0,,Museo,Accesible con silla de ruedas,,http://www.elmamm.org/,Comuna Guayabal Museos,(604) 4442622 ,"Cra. 44 #19a-100, El Poblado, Medellín, El Poblado, Medellín, Antioquia",6.2237797,-75.57384,4.699393886916616,Guayabal
-
-### output ejemplo 2:
-
-el output debe ser:
-   {
-   "description": "Museo de arte contemporáneo que alberga una fascinante colección permanente y exposiciones temporales, complementado con una sala de cine. Espacio cultural totalmente accesible con instalaciones adaptadas para visitantes con movilidad reducida. Cuenta con servicios de restaurante y comodidades esenciales. Ideal para visitas culturales familiares y educativas.",
-   "data": {
-      "name": "Museo de Arte Moderno de Medellín",
-      "comuna": "El Poblado",
-      "categories": "museo, cultura, arte",
-      "address": "Cra. 44 #19a-100, El Poblado, Medellín, Antioquia",
-      "rating bayesian": 4.699,
-      "latitude": 6.2237797,
-      "longitude": -75.57384,
-      "precio" : "$$"
-   }
-}
-
-
+Notes:
+------
+- Make sure to adjust the `region_name` and credentials as needed for your specific AWS setup.
+- The script will continue from the last successfully processed row to avoid reprocessing data.
 """
-
-
 
 
 import pandas as pd
@@ -147,6 +62,12 @@ from botocore.exceptions import ClientError
 import boto3
 
 import os
+
+with open("./data/input/templates/pois_augmentation/prompt_template.txt", 'r', encoding='utf-8') as file:
+    prompt_template = file.read()
+
+with open("./data/input/templates/pois_augmentation/expected_output_template.txt", 'r', encoding='utf-8') as file:
+    expected_output_template = file.read()
 
 
 # Crear el cliente de Bedrock

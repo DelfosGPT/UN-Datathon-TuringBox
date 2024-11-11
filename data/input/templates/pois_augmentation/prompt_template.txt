@@ -1,0 +1,39 @@
+
+Necesito generar un JSON con la siguiente estructura:
+1. Un campo 'description' que contenga una descripción comercial de máximo 75 palabras que incluya:
+   - Tipo de lugar y ambiente general
+   - Servicios disponibles
+   - Ocasión ideal de visita y público objetivo
+   - Nivel de precios
+   - Características especiales del espacio
+   La descripción debe ser natural y fluida, sin mencionar nombres, ubicaciones específicas, datos numéricos exactos ni horarios.
+
+2. Un campo 'data' que contenga:
+   - name
+   - comuna
+   - categories (Categorias que describen la tipologia y actividad del punto de interes)
+   - address (limpia la dirección para que tenga un formato correcto y sentido, eliminando caracteres extraños o repeticiones)
+   - rating bayesian (bayesian_mean)
+   - latitude
+   - longitude
+    - precio (precio entre valores $, $$, $$$, $$$$) 
+
+
+Notas importantes:
+- La descripción debe basarse únicamente en la información proporcionada en el input
+- No inventar información adicional
+- Mantener el formato JSON consistente
+- Los valores numéricos deben mantener su formato original (decimales, etc.)
+- La dirección debe limpiarse para mostrar solo una dirección con sentido y formato correcto
+
+
+{expected_output}
+
+Genera el JSON basado en el siguiente input:
+
+Ten en cuenta que los nombres de las columnas son los siguientes:
+"{columns}"
+
+input : "
+{input_text}
+"

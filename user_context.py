@@ -1,57 +1,71 @@
-prompt_template = """
-
-Basado en el contexto que te voy a proporcionar, trata de obtener mas informacion acerca de un turista, para aumentar la informacion que se tiene sobre su perfil.
-
-Puedes peguntar para aumentar en aspectos como :
-
- ["Restaurantes", "Parques", 
-        "Bares", "Discotecas", "Cines", "Teatros", "Jardines",
-        "Museos", "Parques temático", 
-        "Parques de atracciones", "Parques acuaticos"]
-
-contexto : "{contexto}"
-
-# Ejemplo 1:
-## Ejemplo contexto input : "soy un turista que viaja con su familia y tiene interes en lugares gastronomicos"
-## Ejemplo output:
-Sobre la cultura ... 
-1. Disfruto de los museos y las exposicionesde arte
-2. Me interesan las obras teatrales 
-3. Me gustan las presentaciones musicales
- 
-# Ejemplo 2:
-## Ejemplo contexto input : "soy un turista que viaja con sus amigos, tengo intereses en cultura, disfruto de los museos"
-## Ejemplo output:
-Sobre la comida ...
-1. Disfruto de la alta cocina
-2. Me interesa experimentar con comida tipica
-3. Me gustan los restaurantes de comida rapida
-
-# Ejemplo 3:
-## Ejemplo contexto input : "soy un turista que viaja con su pareja y tiene interes en lugares gastronomicos, me gusta la alta cocina"
-## Ejemplo output:
-¿Qué otras actividades te interesan?
-1. Disfruto de los parques tematicos
-2. Me gustan los teatros y el arte
-3. Me interesa conocer bares y discotecas
-
-# Ejemplo 4:
-## Ejemplo contexto input : "soy un turista que viaja solo"
-## Ejemplo output:
-¿Qué actividades te interesan?
-1. Me encanta la gastronomía
-2. Me disfruto de los parques y jardines
-3. Me interesa el arte y la cultura
-
-
-# Notas Importantes:
-- No des las opciones como preguntas, dalas en primera persona en parte del usuario 
-- Retorna unicamente una pregunta, como ¿Qué actividades te interesan? y las tres opciones de respuesta.
-- Recuerda obtener informacion faltante, preguntar por gastronomia, cultura, e intereses en actividades de ocio sobre las que aún no tengas información en el contexto
 """
+This script simulates a conversational process where a user (tourist) answers a series of questions, 
+and based on the user's responses, a profile is created using the Claude model hosted on Amazon Bedrock.
 
+The main tasks performed by this script are:
+1. Prompting the user for their travel companions (family, friends, partner, solo).
+2. Interacting with the Claude model (via Amazon Bedrock) to generate a conversation for further preferences.
+3. Parsing and processing model responses, extracting available options for the user to select.
+4. Updating the context based on the user's selections and generating a new prompt for the next iteration.
+5. Iterating three times to gather comprehensive preferences from the user.
+6. Displaying the final tourist profile based on the user’s responses.
 
+Modules Used:
+-------------
+- `pandas`: Not used in the code but could be useful for future expansion.
+- `json`: For handling JSON data and responses from the Claude model.
+- `time`: For adding delays during retries in case of throttling from the AWS service.
+- `botocore.exceptions`: For handling exceptions specific to AWS (e.g., `ThrottlingException`).
+- `boto3`: The AWS SDK for Python, used for invoking the Claude model hosted on Amazon Bedrock.
+- `re`: Not explicitly used in the code but may be used for regex processing.
+- `os`: For accessing environment variables for AWS credentials.
 
+Files:
+------
+- `./data/input/templates/user_context/prompt_template.txt`: A text file containing the template for generating prompts based on the user's context.
+
+Functions:
+----------
+- `invoke_claude(prompt, max_retries=5, initial_delay=1)`:
+    Sends a request to the Claude model with the provided prompt, handles throttling using exponential backoff, 
+    and returns the model's response (completion).
+    
+- `get_user_preference(options)`:
+    Prompts the user to select an option from the available choices (1, 2, or 3) and returns the selected option.
+
+- `extract_options(response)`:
+    Parses the response from Claude, extracting the available options for the user to choose from.
+
+- `main()`:
+    Orchestrates the conversation, prompting the user for their initial context and preferences,
+    generating prompts for the Claude model, processing responses, and updating the context for further questions.
+    
+Process:
+--------
+1. **Initial User Input**: The script starts by asking the user to choose their travel companion (family, friends, partner, or solo).
+2. **Prompt Generation and Model Interaction**: For three iterations, the script generates a new prompt based on the user's current profile and sends it to Claude for processing.
+3. **User Selection**: Each model response contains options for the user to choose from, and the user selects their preferred option.
+4. **Updating the Context**: After each iteration, the context is updated based on the user’s response, which is then passed to the Claude model for the next round of questions.
+5. **Final Output**: After three iterations, the user’s complete profile is displayed, reflecting their preferences.
+
+Retries and Delay:
+-----------------
+- If a throttling error occurs during the interaction with the Claude model, the script will retry the request with exponential backoff (increasing wait time after each attempt) to avoid hitting rate limits.
+- The script will make up to 5 retry attempts before giving up on a request.
+
+Example Usage:
+--------------
+1. Ensure that AWS credentials are set in the environment variables (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`).
+2. Place the `prompt_template.txt` in the specified directory.
+3. Run the script, and it will prompt the user for their travel companion and process their selections.
+4. The profile of the tourist will be generated and printed after 3 iterations.
+
+Notes:
+------
+- Modify the `contexto` variable for more detailed or specific context about the user’s travel profile.
+- Ensure that AWS Bedrock is properly configured for use with the `boto3` client.
+
+"""
 
 import pandas as pd
 import json
@@ -59,8 +73,10 @@ import time
 from botocore.exceptions import ClientError
 import boto3
 import re
+import os
 
-
+with open("./data/input/templates/user_context/prompt_template.txt", 'r', encoding='utf-8') as file:
+    prompt_template = file.read()
 
 # Crear el cliente de Bedrock
 bedrock = boto3.client(
@@ -69,7 +85,6 @@ bedrock = boto3.client(
     aws_access_key_id= os.getenv('AWS_ACCESS_KEY_ID'),
     aws_secret_access_key= os.getenv('AWS_SECRET_ACCESS_KEY')
 )
-
 
 def invoke_claude(prompt, max_retries=5, initial_delay=1):
     for attempt in range(max_retries):
@@ -97,7 +112,6 @@ def invoke_claude(prompt, max_retries=5, initial_delay=1):
                     time.sleep(wait_time)
                     continue
             raise  # Re-raise the exception if it's not a ThrottlingException or we're out of retries
-
 
 def get_user_preference(options):
     while True:
@@ -158,6 +172,9 @@ def main():
 
     print("\n=== Perfil final del turista ===")
     print(contexto)
+    with open("./data/output/user_profile/profile.txt", "w") as f:
+        f.write(contexto)
+        print("El perfil del turista se ha generado y guardado en el archivo 'profile.txt'")
 
 if __name__ == "__main__":
     main()

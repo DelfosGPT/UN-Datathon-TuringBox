@@ -1,0 +1,92 @@
+---
+## Ejemplo 1:
+
+### Input Ejemplo 1:
+
+,name,desc,score,c_score,price,category,accessibility,schedule,web,search_parameters,phone,address,lat,lon,bayesian_mean,Comuna
+0,Los Fabio's Popular,"Información  Opciones de servicio
+
+Asientos al aire libre
+
+Entrega a domicilio
+
+Para llevar
+
+Consumo en el lugar
+    Qué ofrece
+
+Comidas durante la madrugada
+    Opciones del local
+
+Cena
+
+Espacio con asientos
+    Ambiente
+
+Agradable
+
+Informal
+    Público usual
+
+Grupos
+    Menores
+
+Ideal para ir con niños",4.5,74.0,$ 10.000-20.000,Hamburguesería,,"6 pm.,9 pm.",,Comuna Popular Restaurantes,319 6117987 ,"Cra. 42c #107-001, La Isla, Medellín, Popular, Medellín, Antioquia",6.295462,-75.5485003,4.440476190476191,Popular
+
+### output ejemplo 1:
+   
+   {
+      "description": "hamburguesería informal con ambiente agradable, perfecta para disfrutar en familia o grupos pequeños. Ofrece opciones de servicio flexibles incluyendo consumo en el local, para llevar y delivery. Cuenta con agradable espacio al aire libre y área interior con asientos. Ideal para cenas casuales y antojos nocturnos con precios moderados, siendo una excelente opción para experiencias gastronómicas relajadas.",
+      "data": {
+         "name": "Los Fabio's Popular",
+         "comuna": "Popular",
+         "categories": "restaurante, comida rapida, hamburguesas",
+         "address": "Cra. 42c #107-001, La Isla, Medellín, Popular, Medellín, Antioquia",
+         "rating bayesian": 4.440,
+         "latitude": 6.295462,
+         "longitude": -75.5485003,
+         "precio" : "$"
+      }
+   }
+
+## Ejemplo 2:
+
+### Input Ejemplo 2:
+
+,name,desc,score,c_score,price,category,accessibility,schedule,web,search_parameters,phone,address,lat,lon,bayesian_mean,Comuna
+1390,Museo de Arte Moderno de Medellín,"Información  Museo de arte moderno con una colección permanente y exposiciones rotativas, además de una gran sala de cine.
+    Accesibilidad
+
+Entrada accesible para personas en silla de ruedas
+
+Estacionamiento accesible para personas en silla de ruedas
+
+Sanitarios accesibles para personas en silla de ruedas
+    Opciones de servicio
+
+Servicios en el lugar
+    Servicios
+
+Restaurante
+
+Sanitario
+    Menores
+
+Ideal para ir con niños",4.7,11539.0,,Museo,Accesible con silla de ruedas,,http://www.elmamm.org/,Comuna Guayabal Museos,(604) 4442622 ,"Cra. 44 #19a-100, El Poblado, Medellín, El Poblado, Medellín, Antioquia",6.2237797,-75.57384,4.699393886916616,Guayabal
+
+### output ejemplo 2:
+
+el output debe ser:
+   {
+   "description": "Museo de arte contemporáneo que alberga una fascinante colección permanente y exposiciones temporales, complementado con una sala de cine. Espacio cultural totalmente accesible con instalaciones adaptadas para visitantes con movilidad reducida. Cuenta con servicios de restaurante y comodidades esenciales. Ideal para visitas culturales familiares y educativas.",
+   "data": {
+      "name": "Museo de Arte Moderno de Medellín",
+      "comuna": "El Poblado",
+      "categories": "museo, cultura, arte",
+      "address": "Cra. 44 #19a-100, El Poblado, Medellín, Antioquia",
+      "rating bayesian": 4.699,
+      "latitude": 6.2237797,
+      "longitude": -75.57384,
+      "precio" : "$$"
+   }
+}

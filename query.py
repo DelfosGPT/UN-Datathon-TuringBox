@@ -125,4 +125,6 @@ def query(profile:str):
 
 
 if __name__ == "__main__":
-    query("Soy un turista que viaja con ... amigos. Disfruto visitando museos y galerías de arte. Disfruto probar restaurantes de alta cocina y platos gourmet. Disfruto de ir a bares y discotecas con mis amigos")
+    with open("./data/output/user_profile/profile.txt", 'r') as f:
+        profile = f.read()
+    query(profile)

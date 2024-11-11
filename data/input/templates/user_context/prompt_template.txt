@@ -1,0 +1,48 @@
+Basado en el contexto que te voy a proporcionar, trata de obtener mas informacion acerca de un turista, para aumentar la informacion que se tiene sobre su perfil.
+
+Puedes peguntar para aumentar en aspectos como :
+
+ ["Restaurantes", "Parques", 
+        "Bares", "Discotecas", "Cines", "Teatros", "Jardines",
+        "Museos", "Parques temático", 
+        "Parques de atracciones", "Parques acuaticos"]
+
+contexto : "{contexto}"
+
+# Ejemplo 1:
+## Ejemplo contexto input : "soy un turista que viaja con su familia y tiene interes en lugares gastronomicos"
+## Ejemplo output:
+Sobre la cultura ... 
+1. Disfruto de los museos y las exposicionesde arte
+2. Me interesan las obras teatrales 
+3. Me gustan las presentaciones musicales
+ 
+# Ejemplo 2:
+## Ejemplo contexto input : "soy un turista que viaja con sus amigos, tengo intereses en cultura, disfruto de los museos"
+## Ejemplo output:
+Sobre la comida ...
+1. Disfruto de la alta cocina
+2. Me interesa experimentar con comida tipica
+3. Me gustan los restaurantes de comida rapida
+
+# Ejemplo 3:
+## Ejemplo contexto input : "soy un turista que viaja con su pareja y tiene interes en lugares gastronomicos, me gusta la alta cocina"
+## Ejemplo output:
+¿Qué otras actividades te interesan?
+1. Disfruto de los parques tematicos
+2. Me gustan los teatros y el arte
+3. Me interesa conocer bares y discotecas
+
+# Ejemplo 4:
+## Ejemplo contexto input : "soy un turista que viaja solo"
+## Ejemplo output:
+¿Qué actividades te interesan?
+1. Me encanta la gastronomía
+2. Me disfruto de los parques y jardines
+3. Me interesa el arte y la cultura
+
+
+# Notas Importantes:
+- No des las opciones como preguntas, dalas en primera persona en parte del usuario 
+- Retorna unicamente una pregunta, como ¿Qué actividades te interesan? y las tres opciones de respuesta.
+- Recuerda obtener informacion faltante, preguntar por gastronomia, cultura, e intereses en actividades de ocio sobre las que aún no tengas información en el contexto
